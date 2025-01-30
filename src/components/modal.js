@@ -1,10 +1,4 @@
-const profileEdit = document.querySelector('.popup_type_edit');
-const buttonProfileEdit = document.querySelector('.profile__edit-button');
-const buttonAdd = document.querySelector('.profile__add-button');
-const addMore = document.querySelector('.popup_type_new-card');
 const popups = document.querySelectorAll('.popup');
-const imagePopup = document.querySelector('.popup_type_image');
-const currentImage = document.querySelector('.popup__image');
 
 //Закрытие через Esc
 function keyHandler(evt) {
@@ -36,29 +30,4 @@ function closePopup (popup) {
     popup.classList.remove('popup_is-opened');
 };
 
-//Добавить еще
-buttonAdd.addEventListener('click', () => {
-    openPopup(addMore);
-    document.addEventListener('keydown', keyHandler);
-    setListenersClosePopup();
-});
-
-//Настройка профиля
-buttonProfileEdit.addEventListener('click', () => {
-    openPopup(profileEdit);
-    document.addEventListener('keydown', keyHandler);
-    setListenersClosePopup();
-});
-
-//Просмотр изображения
-function handlerOpenImage (evt) {
-    if (evt.target.classList.contains('card__image')) {
-        currentImage.src = evt.target.src;
-        currentImage.alt = evt.target.alt;
-        openPopup(imagePopup);
-        document.addEventListener('keydown', keyHandler);
-        setListenersClosePopup();
-    };
-};
-
-export {handlerOpenImage};
+export {openPopup, closePopup, keyHandler, setListenersClosePopup};

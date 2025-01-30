@@ -1,6 +1,3 @@
-import {handlerAddLike, handlerDelete} from '../index';
-import {handlerOpenImage} from './modal';
-
 const cardsTemplate = document.querySelector('#card-template').content;
 const currentCard = document.querySelector('.places__list');
 
@@ -19,14 +16,19 @@ function createCard (cardInfo, handlerDelete, handlerAddLike, handlerOpenImage) 
     currentCard.addEventListener('click', handlerOpenImage);
 
     return cardElement;
-}
+};
 
-// @todo: Вывести карточки на страницу
-function loadCards (cards) {
-    cards.forEach(element => {
-        const cardNode = createCard(element, handlerDelete, handlerAddLike, handlerOpenImage);
-        currentCard.append(cardNode);
-    });
-}
+//Поставить лайк
+function handlerAddLike (evt) {
+    if (evt.target.classList.contains('card__like-button')) {
+        evt.target.classList.toggle('card__like-button_is-active');
+    };
+};
 
-export {loadCards, createCard};
+//Удаление карточки
+function handlerDelete (evt) {
+    const cardElement = evt.target.closest('.card');
+    cardElement.remove();
+};
+
+export {createCard, handlerAddLike, handlerDelete};
