@@ -15,5 +15,4 @@ function handleFormSubmit(evt) {
 nameInput.value =  profile.querySelector('.profile__title').textContent;
 jobInput.value = profile.querySelector('.profile__description').textContent;
 
-formElement.addEventListener('submit', handleFormSubmit); 
-
+formElement.addEventListener('submit', handleFormSubmit);
