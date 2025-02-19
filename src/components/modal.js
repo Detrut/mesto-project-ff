@@ -25,4 +25,4 @@ function closePopup (popup) {
     document.removeEventListener('keydown', keyHandler);
 };
 
-export {openPopup, setListenersClosePopup};
+export {openPopup, closePopup, setListenersClosePopup};
