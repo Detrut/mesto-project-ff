@@ -2,7 +2,6 @@ import './pages/index.css';
 import {createCard, handlerAddLike, handlerDelete} from './components/card.js';
 import {openPopup, closePopup, setListenersClosePopup} from './components/modal';
 import {enableValidation, clearValidation} from './components/validation.js';
-import './components/api.js';
 import {getInitialCards, getUserData, getUserId, postNewCard, changeUserInfo, changeUserAvatar} from './components/api.js';
 
 const currentCard = document.querySelector('.places__list');
@@ -64,7 +63,7 @@ function addCard (evt) {
     newCard.link = placeUrl.value;
     postNewCard(namePlace, placeUrl)
       .catch((err) => {
-        renderError(`Ошибка ${err}`);
+        console.log(err);
       })
       .finally(() => {
         renderLoading(false, popupAdd);
@@ -93,7 +92,7 @@ function handleFormSubmit(evt) {
     profile.querySelector('.profile__description').textContent = jobInput.value;
     changeUserInfo(nameInput, jobInput)
       .catch((err) => {
-        renderError(`Ошибка ${err}`);
+        console.log(err);
       })
       .finally(() => {
         renderLoading(false, popupEdit);
@@ -108,7 +107,7 @@ function handlerAvatarSubmit(evt) {
     console.log(avatarUrl.value);
     changeUserAvatar(avatarUrl)
       .catch((err) => {
-        renderError(`Ошибка ${err}`);
+        console.log(err);
       })
       .finally(() => {
         renderLoading(false, avatarPopup);
@@ -150,6 +149,7 @@ buttonProfileEdit.addEventListener('click', () => {
 
 //Кнопка настройки аватара
 profileAvatar.addEventListener('click', () => {
+    clearValidation(avatarPopup);
     openPopup(avatarPopup);
 });
 

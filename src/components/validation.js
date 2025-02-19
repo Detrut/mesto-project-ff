@@ -75,6 +75,7 @@ function clearValidation (formElement) {
     const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
     inputList.forEach(element => {
         hideInputError(formElement, element);
+        element.value = '';
     });
 };
 
