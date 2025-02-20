@@ -1,8 +1,26 @@
 import './pages/index.css';
-import {createCard, handlerAddLike, handlerDelete} from './components/card.js';
-import {openPopup, closePopup, setListenersClosePopup} from './components/modal';
-import {enableValidation, clearValidation} from './components/validation.js';
-import {getInitialCards, getUserData, getUserId, postNewCard, changeUserInfo, changeUserAvatar} from './components/api.js';
+import {
+  createCard,
+  handlerAddLike,
+  handlerDelete
+} from './components/card.js';
+import {
+  openPopup,
+  closePopup,
+  setListenersClosePopup
+} from './components/modal';
+import {
+  enableValidation,
+  clearValidation
+} from './components/validation.js';
+import {
+  getInitialCards,
+  getUserData,
+  getUserId,
+  postNewCard,
+  changeUserInfo,
+  changeUserAvatar
+} from './components/api.js';
 
 const currentCard = document.querySelector('.places__list');
 const newPlaceForm = document.forms['new-place'];
@@ -24,30 +42,29 @@ const profileAvatar = document.querySelector('.profile__image');
 const avatarPopup = document.querySelector('.popup__avatar-edit');
 const editAvatarForm = document.forms["avatar"];
 const avatarUrl = editAvatarForm.elements.avatarUrl;
+const validationConfig = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonSelector: 'button_inactive',
+    inputErrorClass: 'form__input_type_error',
+    errorClass: 'form__input-error_active'
+};
 
-export const userId = await getUserId();
+let userId = await getUserId();
 
-// @todo: Вывести карточки на страницу
+
 Promise.all([getInitialCards(), getUserData()])
-    .then(([cards]) => {
-        cards.forEach(element => {
-            const cardNode = createCard(element, handlerDelete, handlerAddLike, handlerOpenImage);
+    .then((values) => {
+        //Вывести карточки на страницу
+        values[0].forEach(element => {
+            const cardNode = createCard(element, handlerDelete, handlerAddLike, handlerOpenImage, userId);
             currentCard.append(cardNode);
-            if (!(element.owner._id === userId)) {
-                cardNode.querySelector('.card__delete-button').style.display = 'none';
-            }
         })
-    })
-    .catch((err) => {
-        console.log(err);
-    })
-
-//Получение данных о пользователе
-getUserData()
-    .then(data => {
-        document.querySelector('.profile__title').textContent = data.name;
-        document.querySelector('.profile__description').textContent = data.about;
-        document.querySelector('.profile__image').style.backgroundImage = `url(${data.avatar})`;
+        //Получение данных о пользователе
+        document.querySelector('.profile__title').textContent = values[1].name;
+        document.querySelector('.profile__description').textContent = values[1].about;
+        profileAvatar.style.backgroundImage = `url(${values[1].avatar})`;
     })
     .catch((err) => {
         console.log(err);
@@ -59,20 +76,21 @@ function addCard (evt) {
 
     evt.preventDefault();
     renderLoading(true, popupAdd);
-    newCard.name = namePlace.value;
-    newCard.link = placeUrl.value;
     postNewCard(namePlace, placeUrl)
+     .then((response) => {
+        const cardNode = createCard(response, handlerDelete, handlerAddLike, handlerOpenImage, userId);
+        currentCard.prepend(cardNode);
+        newCard.name = namePlace.value;
+        newCard.link = placeUrl.value;
+        newPlaceForm.reset();
+        closePopup(popupAdd);
+     })
       .catch((err) => {
         console.log(err);
       })
       .finally(() => {
         renderLoading(false, popupAdd);
       })
-    newPlaceForm.reset();
-    closePopup(popupAdd);
-    const cardNode = createCard(newCard, handlerDelete, handlerAddLike, handlerOpenImage);
-    currentCard.prepend(cardNode);
-
 };
 
 //Просмотр изображения
@@ -88,31 +106,35 @@ function handlerOpenImage (evt) {
 function handleFormSubmit(evt) {
     evt.preventDefault();
     renderLoading(true, popupEdit);
-    profile.querySelector('.profile__title').textContent = nameInput.value;
-    profile.querySelector('.profile__description').textContent = jobInput.value;
     changeUserInfo(nameInput, jobInput)
-      .catch((err) => {
+        .then(() => {
+            profile.querySelector('.profile__title').textContent = nameInput.value;
+            profile.querySelector('.profile__description').textContent = jobInput.value;
+            closePopup(popupEdit);
+        })
+        .catch((err) => {
         console.log(err);
-      })
-      .finally(() => {
+        })
+        .finally(() => {
         renderLoading(false, popupEdit);
-      })
-    closePopup(popupEdit);
+        })
 }
 
 //Настройка аватара
 function handlerAvatarSubmit(evt) {
     evt.preventDefault();
     renderLoading(true, avatarPopup);
-    console.log(avatarUrl.value);
     changeUserAvatar(avatarUrl)
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        renderLoading(false, avatarPopup);
-      })
-    closePopup(avatarPopup);
+        .then((response) => {
+            profileAvatar.style.backgroundImage = `url(${response.avatar})`;
+            closePopup(avatarPopup);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+        .finally(() => {
+            renderLoading(false, avatarPopup);
+        })
 }
 
 //Отображение загрузки формы
@@ -136,20 +158,20 @@ newPlaceForm.addEventListener('submit', addCard);
 //Кнопка добавления карточки
 buttonAdd.addEventListener('click', () => {
     openPopup(popupAdd);
-    clearValidation(newPlaceForm);
+    clearValidation(newPlaceForm, validationConfig);
 });
 
 //Кнопка настройки профиля
 buttonProfileEdit.addEventListener('click', () => {
     openPopup(profileEdit);
-    clearValidation(editProfileForm);
+    clearValidation(editProfileForm, validationConfig);
     nameInput.value =  profile.querySelector('.profile__title').textContent;
     jobInput.value = profile.querySelector('.profile__description').textContent;
 });
 
 //Кнопка настройки аватара
 profileAvatar.addEventListener('click', () => {
-    clearValidation(avatarPopup);
+    clearValidation(avatarPopup, validationConfig);
     openPopup(avatarPopup);
 });
 
@@ -157,4 +179,4 @@ profileAvatar.addEventListener('click', () => {
 popups.forEach(el => setListenersClosePopup(el));
 
 //Включить валидацию форм
-enableValidation();
+enableValidation(validationConfig);

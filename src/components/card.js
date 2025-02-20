@@ -1,10 +1,9 @@
-import {config} from '../components/api';
-import {userId} from '../index.js';
+import {addLike, deleteLike, deleteCard} from '../components/api';
 
 const cardsTemplate = document.querySelector('#card-template').content;
 
 // @todo: Функция создания карточки
-function createCard (cardInfo, handlerDelete, handlerAddLike, handlerOpenImage) {
+function createCard (cardInfo, handlerDelete, handlerAddLike, handlerOpenImage, userId) {
     const cardElement = cardsTemplate.querySelector('.card').cloneNode(true);
     const cardDeleteButton = cardElement.querySelector('.card__delete-button');
     const cardLikeButton = cardElement.querySelector('.card__like-button');
@@ -21,6 +20,9 @@ function createCard (cardInfo, handlerDelete, handlerAddLike, handlerOpenImage) 
             cardElement.querySelector('.card__like-counter').classList.add('card__like-button_is-active');
         }
     }
+    if (!(cardInfo.owner._id == userId)) {
+        cardDeleteButton.style.display = 'none';
+    }
 
     cardDeleteButton.addEventListener('click', handlerDelete);
     cardLikeButton.addEventListener('click', handlerAddLike);
@@ -31,35 +33,26 @@ function createCard (cardInfo, handlerDelete, handlerAddLike, handlerOpenImage) 
 
 //Поставить лайк
 function handlerAddLike (evt) {
-    evt.target.classList.toggle('card__like-button_is-active');
     const cardElement = evt.target.closest('.card');
     const cardId = cardElement.querySelector('.card__image').id;
     const cardLike = cardElement.querySelector('.card__like-button_is-active');
-    if (cardLike){
-        return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
-            method: 'PUT',
-            headers: config.headers
-        })
-        .then(res => {
-            if (res.ok) {
-              return res.json();
-            }
-          })
+    if (!cardLike){
+        addLike(cardId)
         .then(data => {
             cardElement.querySelector('.card__like-counter').textContent = data.likes.length;
+            evt.target.classList.add('card__like-button_is-active');
+        })
+        .catch((err) => {
+            console.log(err);
         })
     } else {
-        return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
-            method: 'DELETE',
-            headers: config.headers
-        })
-        .then(res => {
-            if (res.ok) {
-              return res.json();
-            }
-          })
+        deleteLike(cardId)
         .then(data => {
             cardElement.querySelector('.card__like-counter').textContent = data.likes.length;
+            evt.target.classList.remove('card__like-button_is-active');
+        })
+        .catch((err) => {
+            console.log(err);
         })
     }
 };
@@ -68,10 +61,12 @@ function handlerAddLike (evt) {
 function handlerDelete (evt) {
     const cardElement = evt.target.closest('.card');
     const cardId = cardElement.querySelector('.card__image').id;
-    cardElement.remove();
-    fetch(`${config.baseUrl}/cards/${cardId}`, {
-        method: 'DELETE',
-        headers: config.headers
+    deleteCard(cardId)
+    .then(() => {
+        cardElement.remove();
+    })
+    .catch((err) => {
+        console.log(err);
     })
 };
 
